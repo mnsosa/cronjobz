@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling", "hatch-polylith-bricks"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cronjobz"
+version = "0.1.0"
+
+
+
+requires-python = ">=3.13"
+
+dependencies = [
+    "typer>=0.16.0",
+]
+
+[project.scripts]
+cronjobz = "cronjobz.cli:app"
+
+[tool.hatch.build.hooks.polylith-bricks]
+
+[tool.polylith.bricks]
+"../../bases/cronjobz/cli" = "cronjobz/cli"
+"../../components/cronjobz/runner" = "cronjobz/runner"
+"../../components/cronjobz/storage_sqlite" = "cronjobz/storage_sqlite"
+"../../components/cronjobz/shell" = "cronjobz/shell"
