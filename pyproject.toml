@@ -28,3 +28,6 @@ dev-mode-dirs = ["components", "bases", "development", "."]
 "components/cronjobz/runner" = "cronjobz/runner"
 "components/cronjobz/storage_sqlite" = "cronjobz/storage_sqlite"
 "components/cronjobz/shell" = "cronjobz/shell"
+
+[project.scripts]
+cronjobz = "cronjobz.cli.core:app"
