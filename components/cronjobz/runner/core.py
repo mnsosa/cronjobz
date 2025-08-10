@@ -1,15 +1,14 @@
 from pathlib import Path
 
-from cronjobz.shell import run as run_cmd
-from cronjobz.storage_sqlite import JobRun, init_db, save_run
+from cronjobz import shell, storage_sqlite
 
 
 def execute_job(name: str, script: str, db_path: Path | None = None) -> int:
     """Run the script and persist metadata into SQLite."""
-    init_db(db_path)
-    result = run_cmd(["/bin/bash", script])
-    save_run(
-        JobRun(
+    storage_sqlite.init_db(db_path)
+    result = shell.run(["/bin/bash", script])
+    storage_sqlite.save_run(
+        storage_sqlite.JobRun(
             name=name,
             script=script,
             exit_code=result.exit_code,
