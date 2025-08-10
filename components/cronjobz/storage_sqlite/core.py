@@ -1,4 +1,5 @@
 import sqlite3
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -16,6 +17,17 @@ class JobRun:
     duration_seconds: float
     stdout: str
     stderr: str
+
+
+@dataclass
+class JobRunRow:
+    id: int
+    name: str
+    script: str
+    exit_code: int
+    started_at: str
+    finished_at: str
+    duration_seconds: float
 
 
 def _db_path(db_path: Path | None) -> Path:
@@ -52,3 +64,34 @@ def save_run(run: JobRun, db_path: Path | None = None) -> None:
                 run.stderr,
             ),
         )
+
+
+def list_runs(limit: int = 200, db_path: Path | None = None) -> list[JobRunRow]:
+    """Return last N runs (descending by id)."""
+    db = _db_path(db_path)
+    with sqlite3.connect(db) as cx:
+        rows: Iterable[tuple] = cx.execute(
+            """SELECT id, name, script, exit_code, started_at, finished_at, duration_seconds
+               FROM job_runs ORDER BY id DESC LIMIT ?""",
+            (limit,),
+        )
+        return [
+            JobRunRow(
+                id=r[0],
+                name=r[1],
+                script=r[2],
+                exit_code=r[3],
+                started_at=r[4],
+                finished_at=r[5],
+                duration_seconds=float(r[6]),
+            )
+            for r in rows
+        ]
+
+
+def get_run_logs(run_id: int, db_path: Path | None = None) -> tuple[str, str]:
+    """Return (stdout, stderr) for a run id."""
+    db = _db_path(db_path)
+    with sqlite3.connect(db) as cx:
+        row = cx.execute("SELECT stdout, stderr FROM job_runs WHERE id = ?", (run_id,)).fetchone()
+    return (row[0], row[1]) if row else ("", "")
