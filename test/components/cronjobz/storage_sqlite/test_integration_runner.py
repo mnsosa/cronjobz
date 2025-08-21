@@ -11,7 +11,7 @@ def test_execute_job_inserts_row(tmp_path: Path):
     init_db(db)
 
     script = tmp_path / "ok.sh"
-    script.write_text("echo hello\n")
+    script.write_text("#!/bin/bash\necho hello\n")
     os.chmod(script, 0o755)
 
     code = execute_job(name="daily-task", script=str(script), db_path=db)
@@ -19,7 +19,10 @@ def test_execute_job_inserts_row(tmp_path: Path):
 
     with sqlite3.connect(db) as cx:
         row = cx.execute(
-            "SELECT name, script, exit_code FROM job_runs ORDER BY id DESC LIMIT 1"
+            "SELECT name, script, exit_code, status FROM job_runs ORDER BY id DESC LIMIT 1"
         ).fetchone()
 
-    assert row == ("daily-task", str(script), 0)
+    assert row[0] == "daily-task"
+    assert row[1] == str(script)
+    assert row[2] == 0
+    assert row[3] == "completed"
